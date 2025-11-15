@@ -26,6 +26,7 @@ public class AdminController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("users", userService.findAll());
+        model.addAttribute("roles", roleRepository.findAll()); // <-- ДОБАВЬ ЭТУ СТРОКУ
         return "admin/list";
     }
 
