@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tbody.addEventListener('click', event => {
 
+        // --- DELETE ---
         const deleteButton = event.target.closest('.js-delete-user');
         if (deleteButton) {
             const userId = deleteButton.dataset.userId;
@@ -173,28 +174,47 @@ document.addEventListener('DOMContentLoaded', () => {
         addSaveBtn.addEventListener('click', () => {
             const formData = new FormData(addUserForm);
 
-            const roles = formData.getAll('roleIds');
-            if (roles.length === 0) {
+            const firstName = (formData.get('firstName') || '').trim();
+            const lastName  = (formData.get('lastName')  || '').trim();
+            const ageValue  = (formData.get('age')       || '').trim();
+            const email     = (formData.get('email')     || '').trim();
+            const password  = (formData.get('password')  || '').trim();
+            const roleIds   = formData.getAll('roleIds').map(Number);
+
+            if (roleIds.length === 0) {
                 alert('Выберите хотя бы одну роль');
                 const sel = document.getElementById('add-roleIds');
                 if (sel) sel.focus();
                 return;
             }
 
-            fetch('/admin/create', {
+            const age = ageValue === '' ? null : Number(ageValue);
+
+            const payload = {
+                firstName,
+                lastName,
+                age,
+                email,
+                password,
+                roleIds
+            };
+
+            fetch('/api/users', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Не удалось создать пользователя');
                     }
-                    return response.text();
+                    return response.json();
                 })
-                .then(() => {
+                .then(createdUser => {
+                    tbody.appendChild(renderRow(createdUser));
                     addModal.hide();
-
-                    loadUsers();
                 })
                 .catch(error => {
                     console.error('Ошибка при создании пользователя:', error);
