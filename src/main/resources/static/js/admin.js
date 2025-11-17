@@ -110,9 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
         editSaveBtn.addEventListener('click', () => {
             const id = document.getElementById('edit-id').value;
             const firstName = document.getElementById('edit-firstName').value.trim();
-            const lastName = document.getElementById('edit-lastName').value.trim();
-            const ageValue = document.getElementById('edit-age').value;
-            const email = document.getElementById('edit-email').value.trim();
+            const lastName  = document.getElementById('edit-lastName').value.trim();
+            const ageValue  = document.getElementById('edit-age').value;
+            const email     = document.getElementById('edit-email').value.trim();
 
             const age = ageValue === '' ? null : Number(ageValue);
 
@@ -130,11 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify(payload)
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Не удалось обновить пользователя');
+                .then(async response => {
+                    if (response.ok) {
+                        return response.json();
                     }
-                    return response.json();
+
+                    const errText = await response.text();
+                    throw new Error(errText || 'Не удалось обновить пользователя');
                 })
                 .then(updatedUser => {
                     const row = tbody.querySelector(`tr[data-user-id="${updatedUser.id}"]`);
@@ -157,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .catch(error => {
                     console.error('Ошибка при обновлении пользователя:', error);
-                    alert('Ошибка при сохранении пользователя');
+                    alert(error.message || 'Ошибка при сохранении пользователя');
                 });
         });
     }
