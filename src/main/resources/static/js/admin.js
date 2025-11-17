@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tbody.addEventListener('click', event => {
 
-        // --- DELETE ---
         const deleteButton = event.target.closest('.js-delete-user');
         if (deleteButton) {
             const userId = deleteButton.dataset.userId;
@@ -201,24 +200,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             fetch('/api/users', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Не удалось создать пользователя');
+                .then(async response => {
+                    if (response.ok) {
+                        return response.json();
                     }
-                    return response.json();
+
+                    const errText = await response.text();
+                    throw new Error(errText || 'Не удалось создать пользователя');
                 })
-                .then(createdUser => {
-                    tbody.appendChild(renderRow(createdUser));
+                .then(() => {
                     addModal.hide();
+                    loadUsers();
                 })
                 .catch(error => {
                     console.error('Ошибка при создании пользователя:', error);
-                    alert('Ошибка при создании пользователя');
+                    alert(error.message || 'Ошибка при создании пользователя');
                 });
         });
     }
